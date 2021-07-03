@@ -81,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () async {
                     EasyLoading.show(status: 'Log In...');
                     try {
-                      final user = await _auth.signInWithEmailAndPassword(
+                      await _auth.signInWithEmailAndPassword(
                         email: _email.text,
                         password: _password.text,
                       );
