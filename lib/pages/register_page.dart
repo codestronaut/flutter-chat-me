@@ -82,7 +82,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   onPressed: () async {
                     EasyLoading.show(status: 'Please Wait');
                     try {
-                      final user = await _auth.createUserWithEmailAndPassword(
+                      await _auth.createUserWithEmailAndPassword(
                         email: _email.text,
                         password: _password.text,
                       );
