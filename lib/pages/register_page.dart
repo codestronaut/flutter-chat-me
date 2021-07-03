@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chatme/pages/chat_page.dart';
 import 'package:flutter_chatme/pages/widgets/widgets.dart';
 import 'package:flutter_chatme/shared/constants.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class RegisterPage extends StatefulWidget {
   static const routeName = '/register';
@@ -78,17 +80,27 @@ class _RegisterPageState extends State<RegisterPage> {
                   color: ChatMeStyles.primaryColor,
                   revertColor: false,
                   onPressed: () async {
+                    EasyLoading.show(status: 'Please Wait');
                     try {
-                      final newUser =
-                          await _auth.createUserWithEmailAndPassword(
+                      final user = await _auth.createUserWithEmailAndPassword(
                         email: _email.text,
                         password: _password.text,
                       );
 
-                      if (newUser != null) {
-                        Navigator.pushNamed(
-                          context,
-                          ChatPage.routeName,
+                      Navigator.pushReplacementNamed(
+                        context,
+                        ChatPage.routeName,
+                      );
+
+                      EasyLoading.dismiss();
+                    } on FirebaseAuthException catch (e) {
+                      if (e.code == 'weak-password') {
+                        Fluttertoast.showToast(
+                          msg: 'Too weak Password',
+                        );
+                      } else if (e.code == 'email-already-in-use') {
+                        Fluttertoast.showToast(
+                          msg: 'The account already exists for that email.',
                         );
                       }
                     } catch (e) {

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chatme/pages/chat_page.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_chatme/pages/login_page.dart';
 import 'package:flutter_chatme/pages/register_page.dart';
 import 'package:flutter_chatme/pages/utils/loading.dart';
 import 'package:flutter_chatme/pages/welcome_page.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +29,7 @@ class _AppState extends State<App> {
         if (snapshot.connectionState == ConnectionState.done) {
           return ChatMe();
         }
-        return LoadingPage();
+        return Loading();
       },
     );
   }
@@ -49,6 +51,7 @@ class ChatMe extends StatelessWidget {
         RegisterPage.routeName: (context) => RegisterPage(),
         ChatPage.routeName: (context) => ChatPage(),
       },
+      builder: EasyLoading.init(),
     );
   }
 }

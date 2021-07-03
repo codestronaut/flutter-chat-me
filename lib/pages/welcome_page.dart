@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chatme/pages/chat_page.dart';
 import 'package:flutter_chatme/pages/login_page.dart';
 import 'package:flutter_chatme/pages/register_page.dart';
 import 'package:flutter_chatme/pages/widgets/widgets.dart';
@@ -21,6 +23,7 @@ class _WelcomePageState extends State<WelcomePage>
   @override
   void initState() {
     super.initState();
+
     controller = AnimationController(
       duration: Duration(seconds: 1),
       vsync: this,
@@ -34,6 +37,21 @@ class _WelcomePageState extends State<WelcomePage>
       parent: controller,
       curve: Curves.easeInOutCirc,
     );
+
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user != null) {
+        Navigator.pushReplacementNamed(
+          context,
+          ChatPage.routeName,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
