@@ -168,9 +168,12 @@ class _ChatPageState extends State<ChatPage> {
                           color: Colors.white,
                         ),
                         onPressed: () {
+                          final DateTime now = DateTime.now();
+
                           _firestore.collection('messages').add({
                             'sender': _auth.currentUser!.email,
                             'text': _message.text,
+                            'date': now,
                           });
                           _message.clear();
                         },
@@ -193,7 +196,13 @@ class MessagesStream extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot?>(
-      stream: _firestore.collection('messages').snapshots(),
+      stream: _firestore
+          .collection('messages')
+          .orderBy(
+            'date',
+            descending: true,
+          )
+          .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(
