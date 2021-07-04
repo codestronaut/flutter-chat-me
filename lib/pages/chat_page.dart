@@ -8,8 +8,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 enum Menu { logout }
 
-final _auth = FirebaseAuth.instance;
 final _firestore = FirebaseFirestore.instance;
+late User loggedInUser;
 
 class ChatPage extends StatefulWidget {
   static const routeName = '/chat';
@@ -20,7 +20,7 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  late User loggedInUser;
+  final _auth = FirebaseAuth.instance;
   TextEditingController _message = TextEditingController();
 
   void getCurrentUser() {
@@ -50,9 +50,9 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ),
       ],
-    ).then((value) {
+    ).then((value) async {
       if (value == Menu.logout) {
-        _auth.signOut();
+        await _auth.signOut();
         Navigator.pushReplacementNamed(
           context,
           WelcomePage.routeName,
@@ -65,6 +65,11 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     getCurrentUser();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -208,7 +213,7 @@ class MessagesStream extends StatelessWidget {
           final messageBubble = MessageBubble(
             sender: sender.split('@')[0],
             text: text,
-            isMe: sender == _auth.currentUser?.email,
+            isMe: sender == loggedInUser.email,
           );
           messageBubbles.add(messageBubble);
         }

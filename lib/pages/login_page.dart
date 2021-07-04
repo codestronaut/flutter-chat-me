@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chatme/pages/chat_page.dart';
 import 'package:flutter_chatme/pages/widgets/widgets.dart';
 import 'package:flutter_chatme/shared/constants.dart';
+import 'package:flutter_chatme/shared/validations.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class LoginPage extends StatefulWidget {
@@ -17,6 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final _auth = FirebaseAuth.instance;
   TextEditingController _email = TextEditingController();
   TextEditingController _password = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -32,113 +34,115 @@ class _LoginPageState extends State<LoginPage> {
           ),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Hero(
-                  tag: 'logo',
-                  child: Container(
-                    child: Image.asset('assets/chatme.png'),
-                    height: 150.0,
-                  ),
-                ),
-                SizedBox(
-                  height: 100.0,
-                ),
-                Container(
-                  margin: EdgeInsets.only(
-                    bottom: 16.0,
-                  ),
-                  child: TextFormField(
-                    controller: _email,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: ChatMeStyles.kTextFieldDecoration.copyWith(
-                      hintText: 'Email Address',
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Hero(
+                    tag: 'logo',
+                    child: Container(
+                      child: Image.asset('assets/chatme.png'),
+                      height: 150.0,
                     ),
                   ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(
-                    bottom: 16.0,
+                  SizedBox(
+                    height: 100.0,
                   ),
-                  child: TextFormField(
-                    controller: _password,
-                    obscureText: true,
-                    decoration: ChatMeStyles.kTextFieldDecoration.copyWith(
-                      hintText: 'Password',
+                  Container(
+                    margin: EdgeInsets.only(
+                      bottom: 16.0,
+                    ),
+                    child: TextFormField(
+                      controller: _email,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: ChatMeStyles.kTextFieldDecoration.copyWith(
+                        hintText: 'Email Address',
+                      ),
+                      validator: (value) =>
+                          Validations.validateNotEmpty(value!),
                     ),
                   ),
-                ),
-                /**
-                 * Login Button
-                 * Primary Style
-                 */
-                CustomButton(
-                  text: 'Login',
-                  color: ChatMeStyles.primaryColor,
-                  revertColor: false,
-                  onPressed: () async {
-                    EasyLoading.show(status: 'Log In...');
-                    try {
-                      await _auth.signInWithEmailAndPassword(
-                        email: _email.text,
-                        password: _password.text,
-                      );
+                  Container(
+                    margin: EdgeInsets.only(
+                      bottom: 16.0,
+                    ),
+                    child: TextFormField(
+                      controller: _password,
+                      obscureText: true,
+                      decoration: ChatMeStyles.kTextFieldDecoration.copyWith(
+                        hintText: 'Password',
+                      ),
+                      validator: (value) =>
+                          Validations.validateNotEmpty(value!),
+                    ),
+                  ),
+                  /**
+                   * Login Button
+                   * Primary Style
+                   */
+                  CustomButton(
+                    text: 'Login',
+                    color: ChatMeStyles.primaryColor,
+                    revertColor: false,
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        EasyLoading.show(status: 'Log In...');
+                        try {
+                          await _auth.signInWithEmailAndPassword(
+                            email: _email.text,
+                            password: _password.text,
+                          );
 
-                      Navigator.pushReplacementNamed(
-                        context,
-                        ChatPage.routeName,
-                      );
+                          Navigator.pushReplacementNamed(
+                            context,
+                            ChatPage.routeName,
+                          );
 
-                      EasyLoading.dismiss();
-                    } on FirebaseAuthException catch (e) {
-                      if (e.code == 'user-not-found') {
-                        print('User not found!');
-                        EasyLoading.dismiss();
-                      } else if (e.code == 'wrong-password') {
-                        print('Wrong password!');
-                        EasyLoading.dismiss();
-                        Dialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          elevation: 0,
-                          backgroundColor: Colors.transparent,
-                          child: Container(
-                            height: 65.0,
-                            padding: EdgeInsets.all(25),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.rectangle,
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Icon(
-                                  Icons.close,
-                                  color: Colors.redAccent,
-                                ),
-                                SizedBox(height: 10.0),
-                                Text('Wrong Password'),
-                                SizedBox(height: 10.0),
-                                CustomButton(
-                                  text: 'Ok',
-                                  color: ChatMeStyles.primaryColor,
-                                  onPressed: () {},
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
+                          EasyLoading.dismiss();
+                        } on FirebaseAuthException catch (e) {
+                          if (e.code == 'user-not-found') {
+                            print('User not found!');
+                            EasyLoading.dismiss();
+                            showDialog(
+                              context: context,
+                              builder: (context) => PopupDialog(
+                                image: 'assets/error.png',
+                                title: 'User Not Found',
+                                titleColor: Color(0xFFE57373),
+                                description:
+                                    'Please try again with the correct email!',
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            );
+                          } else if (e.code == 'wrong-password') {
+                            print('Wrong password!');
+                            EasyLoading.dismiss();
+                            showDialog(
+                              context: context,
+                              builder: (context) => PopupDialog(
+                                image: 'assets/error.png',
+                                title: 'Wrong Password',
+                                titleColor: Color(0xFFE57373),
+                                description:
+                                    'Please try again with the correct password!',
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          print(e);
+                        }
                       }
-                    } catch (e) {
-                      print(e);
-                    }
-                  },
-                ),
-              ],
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ],
